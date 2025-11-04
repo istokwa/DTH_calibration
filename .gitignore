@@ -1,0 +1,42 @@
+# ==============================
+# R + Rcpp + Research Project
+# ==============================
+
+# --- RStudio ---
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# --- Data Files ---
+*.csv
+*.xlsx
+*.xls
+*.rds
+*.txt
+*.ods
+*.sav
+
+# --- Outputs ---
+/results/
+/plots/
+/output/
+/exports/
+/temp/
+/backup/
+*.pdf
+*.png
+*.jpg
+*.tiff
+*.zip
+
+# --- C++ Compiled ---
+*.o
+*.so
+*.dll
+*.exe
+
+# --- System / OS ---
+.DS_Store
+Thumbs.db
