@@ -40,3 +40,10 @@
 # --- System / OS ---
 .DS_Store
 Thumbs.db
+
+
+# R session files
+.RData
+.Rhistory
+.Ruserdata
+.Rproj.user/

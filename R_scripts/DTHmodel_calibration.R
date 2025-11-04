@@ -10,9 +10,9 @@ library(solartime)
 
 setwd("D:/NU/Repository/GP_DTH-Rice/")
 
-sourceCpp("mse_v02.cpp")
+sourceCpp("src_cpp/mse_v02.cpp")
 
-phenotypes <- read_excel("phenotypes_DVIDVR.xlsx")
+phenotypes <- read_excel("data/raw/phenotypes_DVIDVR.xlsx")
 
 # Generate DTH
 dth <- data.frame(phenotypes[, 1])
@@ -60,7 +60,9 @@ daylengths <- data.frame(daylegnths)
 temperatures <- NULL
 
 for (i in 1:number_of_sites) {
-  temperaturedata <- read_excel(paste0(phenotypes[1, i * 3 - 1], ".xlsx"))
+  file_name <- paste0(phenotypes[1, i * 3 - 1], ".xlsx")
+  file_path <- file.path("data", "raw", file_name)
+  temperaturedata <- read_excel(file_path)
   day0 <- phenotypes[[1, i * 3]]
   row_of_day0 <- which(temperaturedata$Date == as.Date(day0))
   temp <- temperaturedata[row_of_day0:(row_of_day0 + 150), 2]
@@ -359,4 +361,5 @@ for (taxa in 1:10) {
   toc()
 }
 
-write_xlsx(DVRparams, "DVRparams_try_v03.xlsx")
+#write_xlsx(DVRparams, "DVRparams_try_v03.xlsx")
+  
