@@ -203,34 +203,67 @@ for (taxa in 1:10) {
     }
     
     # coarse scan for bigspace grid
+    print(paste("Coarse scan for", TaxaName[[1]]))
+    # 1️⃣ Evaluate all grid combinations
     results <- as.numeric(apply(bigspace, 1, getanMSE))
     min_index <- which.min(results)
     temp_best <- bigspace[min_index, ]
     min_mse <- results[min_index]
     results_df <- data.frame(bigspace, MSE = results)
     
+    # 2️⃣ Identify all minima
     equal_minima <- results_df[results_df$MSE == min_mse, ]
     near_minima  <- results_df[results_df$MSE <= min_mse * 1.01, ]
+    
+    # 3️⃣ Compute model predictions for the best set
+    optG <- temp_best$G
+    optTh <- temp_best$Th
+    optLc <- temp_best$Lc
+    optA <- temp_best$A
+    optB <- temp_best$B
+    
+    model <- vector()
+    for (i in 1:number_of_sites) {
+      model[i] <- calculateDTH_optimized(temperatures[, i],
+                                         daylengths[, i],
+                                         optG, optTh, optLc, optA, optB, 0)
+    }
+    
+    # 4️⃣ Add DTH and MODEL values to output
+    best_row <- data.frame(temp_best,
+                           MSE = min_mse,
+                           Taxa = as.character(TaxaName[[1]]),
+                           DTH1 = as.numeric(tempdth[1]),
+                           DTH2 = as.numeric(tempdth[2]),
+                           DTH3 = as.numeric(tempdth[3]),
+                           MODEL1 = model[1],
+                           MODEL2 = model[2],
+                           MODEL3 = model[3],
+                           stringsAsFactors = FALSE)
     
     equal_minima$Taxa <- as.character(TaxaName[[1]])
     near_minima$Taxa  <- as.character(TaxaName[[1]])
     near_minima$IsBest <- near_minima$MSE == min_mse
-    best_row <- data.frame(temp_best,
-                           MSE = min_mse,
-                           Taxa = as.character(TaxaName[[1]]),
-                           stringsAsFactors = FALSE)
     
-    # append
+    # Add DTH/MODEL columns (NA since we only compute for best)
+    equal_minima$DTH1 <- as.numeric(tempdth[1])
+    equal_minima$DTH2 <- as.numeric(tempdth[2])
+    equal_minima$DTH3 <- as.numeric(tempdth[3])
+    equal_minima$MODEL1 <- model[1]
+    equal_minima$MODEL2 <- model[2]
+    equal_minima$MODEL3 <- model[3]
+    
+    near_minima$DTH1 <- as.numeric(tempdth[1])
+    near_minima$DTH2 <- as.numeric(tempdth[2])
+    near_minima$DTH3 <- as.numeric(tempdth[3])
+    near_minima$MODEL1 <- model[1]
+    near_minima$MODEL2 <- model[2]
+    near_minima$MODEL3 <- model[3]
+    
+    # 5️⃣ Append to global collectors
     all_exact_minima_coarse <- rbind(all_exact_minima_coarse, equal_minima)
     all_near_minima_coarse  <- rbind(all_near_minima_coarse, near_minima)
     all_best_params_coarse  <- rbind(all_best_params_coarse, best_row)
-    
-    cat("\n============================================\n")
-    cat("Taxa:", TaxaName[[1]], "\n")
-    cat("  ▶ Coarse best parameters:\n"); print(best_row)
-    cat("\n  Exact minima:", nrow(equal_minima))
-    cat("\n  Near minima (≤1%):", nrow(near_minima))
-    cat("\n============================================\n\n")
     
     # fine scan
     print(paste("fine scan for", TaxaName))
@@ -244,25 +277,51 @@ for (taxa in 1:10) {
     equal_minima <- results_df[results_df$MSE == min_mse, ]
     near_minima  <- results_df[results_df$MSE <= min_mse * 1.01, ]
     
-    equal_minima$Taxa <- as.character(TaxaName[[1]])
-    near_minima$Taxa  <- as.character(TaxaName[[1]])
-    near_minima$IsBest <- near_minima$MSE == min_mse
+    optG <- temp_best$G
+    optTh <- temp_best$Th
+    optLc <- temp_best$Lc
+    optA <- temp_best$A
+    optB <- temp_best$B
+    
+    model <- vector()
+    for (i in 1:number_of_sites) {
+      model[i] <- calculateDTH_optimized(temperatures[, i],
+                                         daylengths[, i],
+                                         optG, optTh, optLc, optA, optB, 0)
+    }
+    
     best_row <- data.frame(temp_best,
                            MSE = min_mse,
                            Taxa = as.character(TaxaName[[1]]),
+                           DTH1 = as.numeric(tempdth[1]),
+                           DTH2 = as.numeric(tempdth[2]),
+                           DTH3 = as.numeric(tempdth[3]),
+                           MODEL1 = model[1],
+                           MODEL2 = model[2],
+                           MODEL3 = model[3],
                            stringsAsFactors = FALSE)
     
-    # append
+    equal_minima$Taxa <- as.character(TaxaName[[1]])
+    near_minima$Taxa  <- as.character(TaxaName[[1]])
+    near_minima$IsBest <- near_minima$MSE == min_mse
+    
+    equal_minima$DTH1 <- as.numeric(tempdth[1])
+    equal_minima$DTH2 <- as.numeric(tempdth[2])
+    equal_minima$DTH3 <- as.numeric(tempdth[3])
+    equal_minima$MODEL1 <- model[1]
+    equal_minima$MODEL2 <- model[2]
+    equal_minima$MODEL3 <- model[3]
+    
+    near_minima$DTH1 <- as.numeric(tempdth[1])
+    near_minima$DTH2 <- as.numeric(tempdth[2])
+    near_minima$DTH3 <- as.numeric(tempdth[3])
+    near_minima$MODEL1 <- model[1]
+    near_minima$MODEL2 <- model[2]
+    near_minima$MODEL3 <- model[3]
+    
     all_exact_minima_fine <- rbind(all_exact_minima_fine, equal_minima)
     all_near_minima_fine  <- rbind(all_near_minima_fine, near_minima)
     all_best_params_fine  <- rbind(all_best_params_fine, best_row)
-    
-    cat("\n--------------------------------------------\n")
-    cat("Taxa:", TaxaName[[1]], "\n")
-    cat("  ▶ Fine best parameters:\n"); print(best_row)
-    cat("\n  Exact minima:", nrow(equal_minima))
-    cat("\n  Near minima (≤1%):", nrow(near_minima))
-    cat("\n--------------------------------------------\n\n")
     
     
     
@@ -276,29 +335,58 @@ for (taxa in 1:10) {
     min_mse <- results[min_index]
     results_df <- data.frame(smallerspace, MSE = results)
     
+    # 3️⃣ Identify all minima
     equal_minima <- results_df[results_df$MSE == min_mse, ]
     near_minima  <- results_df[results_df$MSE <= min_mse * 1.01, ]
+    
+    # 4️⃣ Compute model predictions using best parameter set
+    optG <- temp_best$G
+    optTh <- temp_best$Th
+    optLc <- temp_best$Lc
+    optA <- temp_best$A
+    optB <- temp_best$B
+    
+    model <- vector()
+    for (i in 1:number_of_sites) {
+      model[i] <- calculateDTH_optimized(temperatures[, i],
+                                         daylengths[, i],
+                                         optG, optTh, optLc, optA, optB, 0)
+    }
+    
+    # 5️⃣ Add DTH and MODEL values
+    best_row <- data.frame(temp_best,
+                           MSE = min_mse,
+                           Taxa = as.character(TaxaName[[1]]),
+                           DTH1 = as.numeric(tempdth[1]),
+                           DTH2 = as.numeric(tempdth[2]),
+                           DTH3 = as.numeric(tempdth[3]),
+                           MODEL1 = model[1],
+                           MODEL2 = model[2],
+                           MODEL3 = model[3],
+                           stringsAsFactors = FALSE)
     
     equal_minima$Taxa <- as.character(TaxaName[[1]])
     near_minima$Taxa  <- as.character(TaxaName[[1]])
     near_minima$IsBest <- near_minima$MSE == min_mse
-    best_row <- data.frame(temp_best,
-                           MSE = min_mse,
-                           Taxa = as.character(TaxaName[[1]]),
-                           stringsAsFactors = FALSE)
     
-    # append
+    equal_minima$DTH1 <- as.numeric(tempdth[1])
+    equal_minima$DTH2 <- as.numeric(tempdth[2])
+    equal_minima$DTH3 <- as.numeric(tempdth[3])
+    equal_minima$MODEL1 <- model[1]
+    equal_minima$MODEL2 <- model[2]
+    equal_minima$MODEL3 <- model[3]
+    
+    near_minima$DTH1 <- as.numeric(tempdth[1])
+    near_minima$DTH2 <- as.numeric(tempdth[2])
+    near_minima$DTH3 <- as.numeric(tempdth[3])
+    near_minima$MODEL1 <- model[1]
+    near_minima$MODEL2 <- model[2]
+    near_minima$MODEL3 <- model[3]
+    
+    # 6️⃣ Append results to global collectors
     all_exact_minima_finer <- rbind(all_exact_minima_finer, equal_minima)
     all_near_minima_finer  <- rbind(all_near_minima_finer, near_minima)
     all_best_params_finer  <- rbind(all_best_params_finer, best_row)
-    
-    cat("\n--------------------------------------------\n")
-    cat("Taxa:", TaxaName[[1]], "\n")
-    cat("  ▶ Finer best parameters:\n"); print(best_row)
-    cat("\n  Exact minima:", nrow(equal_minima))
-    cat("\n  Near minima (≤1%):", nrow(near_minima))
-    cat("\n--------------------------------------------\n\n")
-    
     
     
     
@@ -362,4 +450,15 @@ for (taxa in 1:10) {
 }
 
 #write_xlsx(DVRparams, "DVRparams_try_v03.xlsx")
+#write_xlsx(list(
+#  Coarse_Exact_Minima = all_exact_minima_coarse,
+#  Coarse_Near_Minima  = all_near_minima_coarse,
+#  Coarse_Best_Params  = all_best_params_coarse,
+#  Fine_Exact_Minima   = all_exact_minima_fine,
+#  Fine_Near_Minima    = all_near_minima_fine,
+#  Fine_Best_Params    = all_best_params_fine,
+#  Finer_Exact_Minima  = all_exact_minima_finer,
+#  Finer_Near_Minima   = all_near_minima_finer,
+#  Finer_Best_Params   = all_best_params_finer
+#), "results/GridSearch_Minima_AllTaxa.xlsx")
   
