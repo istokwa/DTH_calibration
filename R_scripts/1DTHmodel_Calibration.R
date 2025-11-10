@@ -94,7 +94,7 @@ MSE <- function(dth,
 # Coarse Space
 bigspace <- list()
 counter <- 1
-for (G in seq(60, 10, by = -10)) {
+for (G in seq(70, 20, by = -10)) {
   for (Th in seq(15, 30, by = 3)) {
     for (Lc in seq(10, 17, by = 1)) {
       for (A in seq(0, 2, by = 0.1)) {
@@ -175,7 +175,7 @@ all_near_minima_finer  <- data.frame()
 all_best_params_finer  <- data.frame()
 
 # Scan taxa by taxa
-for (taxa in 1:10) {
+for (taxa in 1:931) {
   tic()
   TaxaName <- "xxx"
   TaxaName <- phenotypes[taxa, 1]
@@ -449,16 +449,16 @@ for (taxa in 1:10) {
   toc()
 }
 
-#write_xlsx(DVRparams, "DVRparams_try_v03.xlsx")
-#write_xlsx(list(
-#  Coarse_Exact_Minima = all_exact_minima_coarse,
-#  Coarse_Near_Minima  = all_near_minima_coarse,
-#  Coarse_Best_Params  = all_best_params_coarse,
-#  Fine_Exact_Minima   = all_exact_minima_fine,
-#  Fine_Near_Minima    = all_near_minima_fine,
-#  Fine_Best_Params    = all_best_params_fine,
-#  Finer_Exact_Minima  = all_exact_minima_finer,
-#  Finer_Near_Minima   = all_near_minima_finer,
-#  Finer_Best_Params   = all_best_params_finer
-#), "results/GridSearch_Minima_AllTaxa.xlsx")
+write_xlsx(DVRparams, "DVRparams_G70.xlsx")
+write_xlsx(list(
+  Coarse_Exact_Minima = all_exact_minima_coarse,
+  Coarse_Near_Minima  = all_near_minima_coarse,
+  Coarse_Best_Params  = all_best_params_coarse,
+  Fine_Exact_Minima   = all_exact_minima_fine,
+  Fine_Near_Minima    = all_near_minima_fine,
+  Fine_Best_Params    = all_best_params_fine,
+  Finer_Exact_Minima  = all_exact_minima_finer,
+  Finer_Near_Minima   = all_near_minima_finer,
+  Finer_Best_Params   = all_best_params_finer
+), "results/GridSearch_G70_AllTaxa.xlsx")
   

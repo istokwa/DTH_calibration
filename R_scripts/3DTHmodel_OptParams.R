@@ -32,7 +32,7 @@ setwd("D:/NU/Repository/GP_DTH-Rice/")
 ### GLOBAL SETTINGS FOR PLOT SAVING
 ### ============================================================
 
-output_dir <- "results/Figures_All"
+output_dir <- "results/Figures_MultiBestMSE_G70"
 if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
 save_plot <- function(plot_obj, filename, width = 8, height = 6, dpi = 300) {
@@ -45,7 +45,7 @@ save_plot <- function(plot_obj, filename, width = 8, height = 6, dpi = 300) {
 ### STEP 1: Data QC + Family-based Summary
 ### ============================================================
 
-OptParams <- read_excel("results/GridSearch_Minima_Coarse_AllTaxa.xlsx")
+OptParams <- read_excel("results/Coarse_ExactMinima_MultiTaxaG70.xlsx")
 
 family_map <- c(
   "WNAM_02" = "WNAM02",
