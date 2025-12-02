@@ -9,11 +9,11 @@ library(dplyr)
 library(readxl)
 
 # --- 1️⃣ File and sheets ---
-excel_file <- "results/GridSearch_G70_AllTaxa.xlsx"
-target_sheets <- c("Coarse_Exact_Minima", "Coarse_Near_Minima", "Coarse_Best_Params")
+excel_file <- "results/DVRparams.xlsx"
+target_sheets <- c("Sheet1")
 
 # --- 2️⃣ Output directory (set your preferred path here) ---
-output_dir <- "results/ModelFitChecksG70"   # <-- change this path if needed
+output_dir <- "results/ModelFitCheck_Original"   # <-- change this path if needed
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
 # --- 3️⃣ Column names and site labels ---
