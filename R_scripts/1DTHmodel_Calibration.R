@@ -91,59 +91,59 @@ MSE <- function(dth,
   return(mse)
 }
 
-# Coarse Space
-bigspace <- list()
+## ============================================================
+## COARSE / FINE / FINER GRID TEMPLATES (G = 0 placeholder)
+## ============================================================
+
+# --- Coarse Space TEMPLATE (no real G yet) ---
+bigspace_template <- list()
 counter <- 1
-for (G in seq(60, 10, by = -10)) {
-  for (Th in seq(15, 30, by = 3)) {
-    for (Lc in seq(10, 17, by = 1)) {
-      for (A in seq(0.1, 2, by = 0.1)) {
-        for (B in seq(0, 10, by = 0.5)) {
-          # Store the current combination in the list
-          bigspace[[counter]] <- c(G, Th, Lc, A, B)
-          counter <- counter + 1
-        }
+for (Th in seq(15, 30, by = 3)) {
+  for (Lc in seq(10, 17, by = 1)) {
+    for (A in seq(0.1, 2, by = 0.1)) {
+      for (B in seq(0, 10, by = 0.5)) {
+        bigspace_template[[counter]] <- c(0, Th, Lc, A, B)
+        counter <- counter + 1
       }
     }
   }
 }
-bigspace <- as.data.frame(do.call(rbind, bigspace))
-colnames(bigspace) <- c("G", "Th", "Lc", "A", "B")
+bigspace_template <- do.call(rbind, bigspace_template)
+bigspace_template <- as.data.frame(bigspace_template)
+colnames(bigspace_template) <- c("G", "Th", "Lc", "A", "B")
 
-# Fine Space
+# --- Fine Space TEMPLATE (already G=0; keep) ---
 template_of_smallspace <- list()
 counter <- 1
-for (G in seq(10, -10, by = -2)) {
-  for (Th in seq(-3, 3, by = 1)) {
-    for (Lc in seq(-1, 1, by = 0.2)) {
-      for (A in seq(-0.1, 0.1, by = 0.02)) {
-        for (B in seq(-0.5, 0.5, by = 0.2)) {
-          template_of_smallspace[[counter]] <- c(G, Th, Lc, A, B)
-          counter <- counter + 1
-        }
+for (Th in seq(-3, 3, by = 1)) {
+  for (Lc in seq(-1, 1, by = 0.2)) {
+    for (A in seq(-0.1, 0.1, by = 0.02)) {
+      for (B in seq(-0.5, 0.5, by = 0.2)) {
+        template_of_smallspace[[counter]] <- c(0, Th, Lc, A, B)
+        counter <- counter + 1
       }
     }
   }
 }
-template_of_smallspace <- as.data.frame(do.call(rbind, template_of_smallspace))
+template_of_smallspace <- do.call(rbind, template_of_smallspace)
+template_of_smallspace <- as.data.frame(template_of_smallspace)
 colnames(template_of_smallspace) <- c("G", "Th", "Lc", "A", "B")
 
-# Finer Space
+# --- Finer Space TEMPLATE (already G=0; keep) ---
 template_of_smallerspace <- list()
 counter <- 1
-for (G in seq(2, -2, by = -0.5)) {
-  for (Th in seq(-1, 1, by = 0.25)) {
-    for (Lc in seq(-0.2, 0.2, by = 0.1)) {
-      for (A in seq(-0.02, 0.02, by = 0.005)) {
-        for (B in seq(-0.2, 0.2, by = 0.02)) {
-          template_of_smallerspace[[counter]] <- c(G, Th, Lc, A, B)
-          counter <- counter + 1
-        }
+for (Th in seq(-1, 1, by = 0.25)) {
+  for (Lc in seq(-0.2, 0.2, by = 0.1)) {
+    for (A in seq(-0.02, 0.02, by = 0.005)) {
+      for (B in seq(-0.2, 0.2, by = 0.02)) {
+        template_of_smallerspace[[counter]] <- c(0, Th, Lc, A, B)
+        counter <- counter + 1
       }
     }
   }
 }
-template_of_smallerspace <- as.data.frame(do.call(rbind, template_of_smallerspace))
+template_of_smallerspace <- do.call(rbind, template_of_smallerspace)
+template_of_smallerspace <- as.data.frame(template_of_smallerspace)
 colnames(template_of_smallerspace) <- c("G", "Th", "Lc", "A", "B")
 
 # DF for results
@@ -175,19 +175,20 @@ all_near_minima_finer  <- data.frame()
 all_best_params_finer  <- data.frame()
 
 # Scan taxa by taxa
-for (taxa in 1:100) {
+for (taxa in 1:937) {
   tic()
   TaxaName <- "xxx"
   TaxaName <- phenotypes[taxa, 1]
   tempdth <- dth[taxa, 2:(number_of_sites + 1)]
   newMSE <- 99999.0
   if (!any(is.na(tempdth))) {
+    G_taxon <- as.numeric(tempdth[2])
     getanMSE <- function(par) {
-      G <- par[1]
+      G  <- G_taxon          # 🔒 fixed per taxon = DTH2
       Th <- par[2]
       Lc <- par[3]
-      A <- par[4]
-      B <- par[5]
+      A  <- par[4]
+      B  <- par[5]
       tempMSE <- MSE_cpp(
         do.call(cbind, tempdth),
         do.call(cbind, temperatures),
@@ -198,29 +199,35 @@ for (taxa in 1:100) {
         A,
         B,
         0
-      ) # DVIstar=0
+      )
       return(tempMSE)
     }
     
     # coarse scan for bigspace grid
+    bigspace <- bigspace_template
+    bigspace$G <- G_taxon
+                            
     print(paste("Coarse scan for", TaxaName[[1]]))
     # 1️⃣ Evaluate all grid combinations
     results <- as.numeric(apply(bigspace, 1, getanMSE))
     min_index <- which.min(results)
     temp_best <- bigspace[min_index, ]
+    temp_best$G <- G_taxon   # overwrite just in case
+    
+    optG  <- G_taxon
+    optTh <- temp_best$Th
+    optLc <- temp_best$Lc
+    optA  <- temp_best$A
+    optB  <- temp_best$B
+    
     min_mse <- results[min_index]
     results_df <- data.frame(bigspace, MSE = results)
+    temp_best$G <- G_taxon
     
-    # 2️⃣ Identify all minima
+        # 2️⃣ Identify all minima
     equal_minima <- results_df[results_df$MSE == min_mse, ]
     near_minima  <- results_df[results_df$MSE <= min_mse * 1.01, ]
     
-    # 3️⃣ Compute model predictions for the best set
-    optG <- temp_best$G
-    optTh <- temp_best$Th
-    optLc <- temp_best$Lc
-    optA <- temp_best$A
-    optB <- temp_best$B
     
     model <- vector()
     for (i in 1:number_of_sites) {
@@ -271,6 +278,8 @@ for (taxa in 1:100) {
     results <- as.numeric(apply(smallspace, 1, getanMSE))
     min_index <- which.min(results)
     temp_best <- smallspace[min_index, ]
+    temp_best$G <- G_taxon
+    optG <- G_taxon
     min_mse <- results[min_index]
     results_df <- data.frame(smallspace, MSE = results)
     
@@ -431,7 +440,7 @@ for (taxa in 1:100) {
   }
   
   params[1] <- TaxaName
-  params[2] <- optG
+  params[2] <- G_taxon
   params[3] <- optTh
   params[4] <- optLc
   params[5] <- optA
@@ -449,7 +458,7 @@ for (taxa in 1:100) {
   toc()
 }
 
-write_xlsx(DVRparams, "results/DVRparams_A-adj.xlsx")
+write_xlsx(DVRparams, "results/DVRparams-G_DTH2.xlsx")
 write_xlsx(list(
   Coarse_Exact_Minima = all_exact_minima_coarse,
   Coarse_Near_Minima  = all_near_minima_coarse,
@@ -460,4 +469,4 @@ write_xlsx(list(
   Finer_Exact_Minima  = all_exact_minima_finer,
   Finer_Near_Minima   = all_near_minima_finer,
   Finer_Best_Params   = all_best_params_finer
-), "results/GridSearch_A-adj.xlsx")
+), "results/DVRparams-DVRparams-G_DTH2.xlsx")

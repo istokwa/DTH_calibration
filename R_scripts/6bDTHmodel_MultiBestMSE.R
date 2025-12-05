@@ -7,8 +7,8 @@ library(dplyr)
 library(writexl)
 
 # 1️⃣ Load the Coarse_Exact_Minima sheet
-coarse_exact <- read_excel("results/GridSearch_G70_AllTaxa.xlsx",
-                           sheet = "Coarse_Exact_Minima")
+coarse_exact <- read_excel("results/DVRparams-DVRparams-G_DTH2.xlsx",
+                           sheet = "Finer_Exact_Minima")
 
 # 2️⃣ Count how many exact minima each taxon has
 taxa_counts <- coarse_exact %>%
@@ -34,6 +34,6 @@ print(multi_minima_details %>%
         select(Taxa, G, Th, Lc, A, B, MSE, starts_with("DTH"), starts_with("MODEL")))
 
 # 6️⃣ Save results to Excel
-write_xlsx(multi_minima_details, "results/Coarse_ExactMinima_MultiTaxaG70.xlsx")
+write_xlsx(multi_minima_details, "data/processed/MultiTaxa-G_DTH2-(12-04-2025).xlsx")
 
 cat("\n💾 Saved multiple-minima details to 'Coarse_ExactMinima_MultiTaxa.xlsx'\n")
