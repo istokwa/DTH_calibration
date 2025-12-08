@@ -175,7 +175,7 @@ all_near_minima_finer  <- data.frame()
 all_best_params_finer  <- data.frame()
 
 # Scan taxa by taxa
-for (taxa in 1:100) {
+for (taxa in 1:937) {
   tic()
   TaxaName <- "xxx"
   TaxaName <- phenotypes[taxa, 1]
@@ -449,7 +449,7 @@ for (taxa in 1:100) {
   toc()
 }
 
-write_xlsx(DVRparams, "results/DVRparams_A-adj.xlsx")
+#write_xlsx(DVRparams, "data/processed/(12-08-2025)-DVRparams-G_lowDTH.xlsx")
 write_xlsx(list(
   Coarse_Exact_Minima = all_exact_minima_coarse,
   Coarse_Near_Minima  = all_near_minima_coarse,
@@ -460,4 +460,4 @@ write_xlsx(list(
   Finer_Exact_Minima  = all_exact_minima_finer,
   Finer_Near_Minima   = all_near_minima_finer,
   Finer_Best_Params   = all_best_params_finer
-), "results/GridSearch_A-adj.xlsx")
+), "results/data/processed/(12-08-2025)-DVRparams-G_lowDTH.xlsx")
