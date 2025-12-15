@@ -32,7 +32,7 @@ setwd("D:/NU/Repository/GP_DTH-Rice/")
 ### GLOBAL SETTINGS FOR PLOT SAVING
 ### ============================================================
 
-output_dir <- "results/Figures_MultiBestMSE_G70"
+output_dir <- "results/(02) Variance/(12-12-2025)-Var-G_minDTH[Test]"
 if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
 save_plot <- function(plot_obj, filename, width = 8, height = 6, dpi = 300) {
@@ -45,7 +45,7 @@ save_plot <- function(plot_obj, filename, width = 8, height = 6, dpi = 300) {
 ### STEP 1: Data QC + Family-based Summary
 ### ============================================================
 
-OptParams <- read_excel("results/Coarse_ExactMinima_MultiTaxaG70.xlsx")
+OptParams <- read_excel("data/processed/(12-08-2025)-DVRparams-G_lowestDTH.xlsx")
 
 family_map <- c(
   "WNAM_02" = "WNAM02",
@@ -63,8 +63,9 @@ OptParams <- OptParams %>%
                          family_map[Family],
                          Taxa))
 
-numeric_cols <- c("G","Th","Lc","A","B","MSE",
-                  "DTH1","DTH2","DTH3","MODEL1","MODEL2","MODEL3")
+cols_DVRParams <- c("G","Th","Lc","A","B","MSE")
+cols_actDTH <- c("DTH1","DTH2","DTH3")
+cols_predDTH <- c("MODEL1","MODEL2","MODEL3")
 
 cat("\n--- MISSING VALUE CHECK ---\n")
 na_summary <- colSums(is.na(OptParams[numeric_cols]))
@@ -289,7 +290,7 @@ print(significant_posthoc)
 ### STEP 5: Boxplots WITH CLD (Compact Letter Display)
 ### ============================================================
 
-for (param in numeric_cols) {
+for (param in cols_DVRParams) {
   
   if (length(unique(OptParams_complete[[param]])) <= 1) next
   
@@ -326,20 +327,28 @@ for (param in numeric_cols) {
   max_y <- max(y, na.rm = TRUE)
   y_range <- max_y - min(y, na.rm = TRUE)
   
-  p <- ggplot(OptParams_complete, aes(x = Family, y = .data[[param]], fill = Family)) +
-    geom_boxplot(alpha = 0.7, outlier.shape = 16, outlier.size = 1.5) +
-    theme_minimal(base_size = 13) +
-    theme(legend.position = "none",
-          axis.text.x = element_text(angle = 45, hjust = 1)) +
-    labs(title = paste("Parameter:", param),
-         x = "Family", y = param)
+  DVRParams <- OptParams_complete %>%
+    select(Taxa, Family, G, Th, Lc, A, B, MSE) %>%
+    drop_na() %>%
+    as.data.frame()
   
-  if (!is.null(cld_df)) {
-    cld_df <- cld_df %>% mutate(ypos = max_y + 0.1 * y_range)
-    p <- p + geom_text(data = cld_df,
-                       aes(x = Family, y = ypos, label = CLD),
-                       inherit.aes = FALSE, vjust = 0)
+  DVRParamsplot <- ggplot(DVRParams, aes(x = Family, y = .data[[param]], fill = Family)) +
+    geom_blank() +
+    xlab(NULL) +
+    ylab(NULL)
+  
+  DVRParamsplot + facet_wrap(vars(param), ncol = 3)
+  DVRParamsplot + facet_wrap(vars(param), ncol = 3)
+  
   }
+
+long_DVRParams <- DVRParams %>%
+  pivot_longer(
+    cols = c(G, Th, Lc, A, B, MSE),
+    names_to  = "Parameter",
+    values_to = "Value"
+  )
+    
   
   print(p)
   save_plot(p, paste0("CLD_", param))
@@ -503,8 +512,8 @@ cor_sig_fn <- function(data, mapping, ...) {
     ggplot(data = data, mapping = mapping) +
       annotate("text", x = 0.5, y = 0.5,
                label = paste0(r_val, sig_star),
-               size = 5,
-               color = ifelse(r_val > 0.5, "red",
+               size = 8,
+               color = ifelse(r_val > 0.5, "orange",
                               ifelse(r_val < -0.5, "blue", "black"))) +
       theme_void()
   } else { ggplot() + theme_void() }
@@ -519,6 +528,7 @@ if (nrow(subset_all) >= 2) {
                      lower = list(continuous = wrap("points", alpha = 0.6)),
                      diag  = list(continuous = "densityDiag"),
                      upper = list(continuous = cor_sig_fn)) +
+    theme(text = element_text(size=14))
     ggtitle("Phenotypic Correlations - All Families")
   print(ggp_all)
   save_plot(ggp_all, "Correlation_AllFamilies")

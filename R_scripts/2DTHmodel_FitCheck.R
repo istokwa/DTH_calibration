@@ -9,11 +9,11 @@ library(dplyr)
 library(readxl)
 
 # --- 1️⃣ File and sheets ---
-excel_file <- "results/DVRparams.xlsx"
+excel_file <- "data/processed/(12-03-2025)-UniTaxa-G_DTH2.xlsx"
 target_sheets <- c("Sheet1")
 
 # --- 2️⃣ Output directory (set your preferred path here) ---
-output_dir <- "results/ModelFitCheck_Original"   # <-- change this path if needed
+output_dir <- "results/Test(12-03-2025)-UniTaxa-G_DTH2"   # <-- change this path if needed
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
 # --- 3️⃣ Column names and site labels ---
@@ -93,7 +93,14 @@ analyze_sheet <- function(sheet_name) {
     geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
     labs(title = paste("Observed vs Predicted DTH - All Sites (", sheet_name, ")", sep = ""),
          x = "Observed DTH", y = "Predicted DTH") +
-    theme_minimal() +
+    theme_grey(
+      base_size = 14,
+      base_family = "",
+      header_family = NULL,
+      ink = "black",
+      paper = "white",
+      accent = "#3366FF"
+    ) +
     theme(legend.position = "bottom") +
     geom_text(data = metrics_df,
               aes(x = min(combined_data$Observed),
@@ -101,7 +108,7 @@ analyze_sheet <- function(sheet_name) {
                   label = paste0(Site, ": R²=", round(R2,3),
                                  ", RMSE=", round(RMSE,2),
                                  ", NSE=", round(NSE,3))),
-              color = "black", hjust = 0, vjust = 1, size = 4, inherit.aes = FALSE)
+              color = "black", hjust = 0, vjust = 1, size = 6, inherit.aes = FALSE)
   
   # Save combined plot
   ggsave(filename = file.path(sheet_dir, paste0("Combined_AllSites_", sheet_name, ".png")),
