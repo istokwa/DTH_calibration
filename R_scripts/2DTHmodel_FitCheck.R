@@ -9,17 +9,18 @@ library(dplyr)
 library(readxl)
 
 # --- 1️⃣ File and sheets ---
-excel_file <- "results/DVRparams.xlsx"
-target_sheets <- c("Sheet1")
+excel_file <- "data/processed/(12-22-2025)-DVIstartest.xlsx"
+target_sheets <- c("Finer_Best_Params")
+experimentID <- "DVIstartest"
 
 # --- 2️⃣ Output directory (set your preferred path here) ---
-output_dir <- "results/ModelFitCheck_Original"   # <-- change this path if needed
+output_dir <- "results/1 - Regression/ModelFitCheck_G_minDTH (Test)"   # <-- change this path if needed
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
 # --- 3️⃣ Column names and site labels ---
 obs_cols <- c("DTH1", "DTH2", "DTH3")
 pred_cols <- c("MODEL1", "MODEL2", "MODEL3")
-sites <- c("Ishigaki1", "Ishigaki2", "Nagoya1")
+sites <- c("ISG1", "ISG2", "NGY1")
 
 # --- 4️⃣ Define plot function ---
 plot_site <- function(obs, pred, site_name) {
@@ -101,10 +102,12 @@ analyze_sheet <- function(sheet_name) {
                   label = paste0(Site, ": R²=", round(R2,3),
                                  ", RMSE=", round(RMSE,2),
                                  ", NSE=", round(NSE,3))),
-              color = "black", hjust = 0, vjust = 1, size = 4, inherit.aes = FALSE)
+              color = "black", hjust = 0, vjust = 1, size = 8, inherit.aes = FALSE)
+ 
   
+   
   # Save combined plot
-  ggsave(filename = file.path(sheet_dir, paste0("Combined_AllSites_", sheet_name, ".png")),
+  ggsave(filename = file.path(sheet_dir, paste0("Combined_AllSites_", experimentID, ".png")),
          plot = combined_plot, width = 8, height = 6, dpi = 300)
   
   # Save metrics table to CSV

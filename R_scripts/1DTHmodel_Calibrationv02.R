@@ -12,9 +12,15 @@ setwd("D:/NU/Repository/GP_DTH-Rice/")
 
 sourceCpp("src_cpp/mse_v03.cpp")
 
+<<<<<<< HEAD
 phenotypes <- read_excel("data/raw/phenotypes_DVIDVRv02.xlsx", sheet = "Sheet4")
 
 experimentID <- "(12-24-2025)-enviTest2"
+=======
+phenotypes <- read_excel("data/raw/phenotypes_DVIDVRv02.xlsx", sheet = "Sheet3")
+
+experimentID <- "(01-14-2026)-finerABDVIstar-001"
+>>>>>>> addEnv
 
 # ============================================================
 # Generate DTH
@@ -41,7 +47,11 @@ for (i in 1:number_of_sites) {
 # ============================================================
 # Generate Daylengths
 # ============================================================
+<<<<<<< HEAD
 daylegnths <- matrix(data = 0, nrow = 151, ncol = number_of_sites)
+=======
+daylegnths <- matrix(data = 0, nrow = 201, ncol = number_of_sites)
+>>>>>>> addEnv
 
 for (i in 1:number_of_sites) {
   if (phenotypes[1, i * 3 - 1] == "ishigaki") {
@@ -56,9 +66,21 @@ for (i in 1:number_of_sites) {
     elevation <- 65
   }
   
+<<<<<<< HEAD
   day0 <- as.Date(phenotypes[[1, i * 3]])
   
   for (j in 1:151) {
+=======
+  if (phenotypes[1, i * 3 - 1] == "iwate") {
+    latitude <- 39.35107
+    longitude <- 141.10688
+    elevation <- 63
+  }
+  
+  day0 <- as.Date(phenotypes[[1, i * 3]])
+  
+  for (j in 1:201) {
+>>>>>>> addEnv
     date <- as.Date(day0 + j - 2) # sowing date of the 1st taxa + j
     
     sun_times <- getSunlightTimes(
@@ -95,12 +117,27 @@ for (i in 1:number_of_sites) {
   
   day0 <- phenotypes[[1, i * 3]]
   row_of_day0 <- which(temperaturedata$Date == as.Date(day0))
+<<<<<<< HEAD
   temp <- temperaturedata[row_of_day0:(row_of_day0 + 150), 2]
+=======
+  temp <- temperaturedata[row_of_day0:(row_of_day0 + 200), 2]
+>>>>>>> addEnv
   
   temperatures <- if (is.null(temperatures)) temp else cbind(temperatures, temp)
 }
 
 # ============================================================
+<<<<<<< HEAD
+=======
+# IMPORTANT: Convert daylengths to NUMERIC HOURS
+# Your current daylengths are difftime objects (seconds)
+# ============================================================
+temperatures <- as.data.frame(temperatures)
+
+
+
+# ============================================================
+>>>>>>> addEnv
 # DTH calculation using crop model
 # ============================================================
 MSE <- function(dth,
@@ -130,12 +167,21 @@ MSE <- function(dth,
 bigspace <- list()
 counter <- 1
 
+<<<<<<< HEAD
 for (G in seq(120, 60, by = -10)) {
   for (Th in seq(10, 30, by = 3)) {
     for (Lc in seq(10, 15, by = 1)) {
       for (A in seq(0.1, 2, by = 0.1)) {
         for (B in seq(0.5, 5, by = 0.5)) {
           for (DVIstar in seq(0.2, 0.6, by = 0.2)) {
+=======
+for (G in seq(30, 60, by = 10)) {
+  for (Th in seq(15, 20, by = 5)){
+    for (Lc in seq(15, 15, by = 0)){
+      for (A in seq(0, 2, by = 0.5)){
+        for (B in seq(0, 15, by = 0.5)) {
+          for (DVIstar in seq(0.2, 0.8, by = 0.1)) {
+>>>>>>> addEnv
             bigspace[[counter]] <- c(G, Th, Lc, A, B, DVIstar)
             counter <- counter + 1
           }
@@ -145,6 +191,10 @@ for (G in seq(120, 60, by = -10)) {
   }
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> addEnv
 bigspace <- as.data.frame(do.call(rbind, bigspace))
 colnames(bigspace) <- c("G", "Th", "Lc", "A", "B", "DVIstar")
 
@@ -154,12 +204,21 @@ colnames(bigspace) <- c("G", "Th", "Lc", "A", "B", "DVIstar")
 template_of_smallspace <- list()
 counter <- 1
 
+<<<<<<< HEAD
 for (G in seq(10, -10, by = -2)) {
   for (Th in seq(3, -3, by = -1)) {
     for (Lc in seq(1, -1, by = -0.2)) {
       for (A in seq(0.1, -0.1, by = -0.02)) {
         for (B in seq(0.5, -0.5, by = -0.2)) {
           for (DVIstar in seq(0.2, 0.1, by = -0.05)) {
+=======
+for (G in seq(0, 0, by = 0)) {
+  for (Th in seq(0, 0, by = 0)) {
+    for (Lc in seq(0, 0, by = 0)){
+      for (A in seq(0, 0, by = 0)) {
+        for (B in seq(0, 0, by = 0)) {
+          for (DVIstar in seq(0, 0, by = 0)) {
+>>>>>>> addEnv
             template_of_smallspace[[counter]] <- c(G, Th, Lc, A, B, DVIstar)
             counter <- counter + 1
           }
@@ -178,11 +237,19 @@ colnames(template_of_smallspace) <- c("G", "Th", "Lc", "A", "B", "DVIstar")
 template_of_smallerspace <- list()
 counter <- 1
 
+<<<<<<< HEAD
 for (G in seq(2, -2, by = -0.5)) {
   for (Th in seq(1, -1, by = -0.25)) {
     for (Lc in seq(0.2, -0.2, by = -0.1)) {
       for (A in seq(0.02, -0.02, by = -0.005)) {
         for (B in seq(0.2, -0.2, by = -0.02)) {
+=======
+for (G in seq(0, 0, by = 0)) {
+  for (Th in seq(0, 0, by = 0)) {
+    for (Lc in seq(0, 0, by = 0)){
+      for (A in seq(0, 0, by = 0)) {
+        for (B in seq(0, 0, by = 0)) {
+>>>>>>> addEnv
           for (DVIstar in seq(0, 0, by = 0)) {
             template_of_smallerspace[[counter]] <- c(G, Th, Lc, A, B, DVIstar)
             counter <- counter + 1
@@ -260,7 +327,11 @@ make_best_row <- function(temp_best, min_mse, TaxaName, tempdth, model, number_o
   best_row
 }
 
+<<<<<<< HEAD
 for (taxa in 1:10) {
+=======
+for (taxa in 1:23) {
+>>>>>>> addEnv
   tic()
   
   TaxaName <- "xxx"

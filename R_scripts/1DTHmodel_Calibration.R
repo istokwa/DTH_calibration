@@ -10,9 +10,11 @@ library(solartime)
 
 setwd("D:/NU/Repository/GP_DTH-Rice/")
 
-sourceCpp("src_cpp/mse_v02.cpp")
+sourceCpp("src_cpp/mse_v03.cpp")
 
-phenotypes <- read_excel("data/raw/phenotypes_DVIDVR.xlsx")
+phenotypes <- read_excel("data/raw/phenotypes_DVIDVR.xlsx", sheet = "Sampled")
+
+experimentID = "(12-22-2025)-DVIstartest3"
 
 # Generate DTH
 dth <- data.frame(phenotypes[, 1])
@@ -81,7 +83,7 @@ MSE <- function(dth,
                 Lc,
                 A,
                 B,
-                dvistar) {
+                DVIstar) {
   number_of_sites <- (ncol(phenotypes) - 1) / 3
   model <- vector()
   for (i in 1:number_of_sites) {
@@ -94,62 +96,68 @@ MSE <- function(dth,
 # Coarse Space
 bigspace <- list()
 counter <- 1
-for (G in seq(60, 10, by = -10)) {
-  for (Th in seq(15, 30, by = 3)) {
-    for (Lc in seq(10, 17, by = 1)) {
+for (G in seq(120, 60, by = -10)) {
+  for (Th in seq(10, 30, by = 3)) {
+    for (Lc in seq(10, 15, by = 1)) {
       for (A in seq(0.1, 2, by = 0.1)) {
-        for (B in seq(0, 10, by = 0.5)) {
-          # Store the current combination in the list
-          bigspace[[counter]] <- c(G, Th, Lc, A, B)
-          counter <- counter + 1
+        for (B in seq(0.5, 5, by = 0.5)) {
+          for (DVIstar in seq (0.2, 0.6, by = 0.2)) {
+            # Store the current combination in the list
+            bigspace[[counter]] <- c(G, Th, Lc, A, B, DVIstar)
+            counter <- counter + 1
+          }
         }
       }
     }
   }
 }
 bigspace <- as.data.frame(do.call(rbind, bigspace))
-colnames(bigspace) <- c("G", "Th", "Lc", "A", "B")
+colnames(bigspace) <- c("G", "Th", "Lc", "A", "B", "DVIstar")
 
 # Fine Space
 template_of_smallspace <- list()
 counter <- 1
 for (G in seq(10, -10, by = -2)) {
-  for (Th in seq(-3, 3, by = 1)) {
-    for (Lc in seq(-1, 1, by = 0.2)) {
-      for (A in seq(-0.1, 0.1, by = 0.02)) {
-        for (B in seq(-0.5, 0.5, by = 0.2)) {
-          template_of_smallspace[[counter]] <- c(G, Th, Lc, A, B)
-          counter <- counter + 1
+  for (Th in seq(3, -3, by = -1)) {
+    for (Lc in seq(1, -1, by = -0.2)) {
+      for (A in seq(0.1, -0.1, by = -0.02)) {
+        for (B in seq(0.5, -0.5, by = -0.2)) {
+          for (DVIstar in seq (0.2, 0.1, by = -0.05)) {
+            template_of_smallspace[[counter]] <- c(G, Th, Lc, A, B, DVIstar)
+            counter <- counter + 1
+          }
         }
       }
     }
   }
 }
 template_of_smallspace <- as.data.frame(do.call(rbind, template_of_smallspace))
-colnames(template_of_smallspace) <- c("G", "Th", "Lc", "A", "B")
+colnames(template_of_smallspace) <- c("G", "Th", "Lc", "A", "B", "DVIstar")
 
 # Finer Space
 template_of_smallerspace <- list()
 counter <- 1
 for (G in seq(2, -2, by = -0.5)) {
-  for (Th in seq(-1, 1, by = 0.25)) {
-    for (Lc in seq(-0.2, 0.2, by = 0.1)) {
-      for (A in seq(-0.02, 0.02, by = 0.005)) {
-        for (B in seq(-0.2, 0.2, by = 0.02)) {
-          template_of_smallerspace[[counter]] <- c(G, Th, Lc, A, B)
-          counter <- counter + 1
+  for (Th in seq(1, -1, by = -0.25)) {
+    for (Lc in seq(0.2, -0.2, by = -0.1)) {
+      for (A in seq(0.02, -0.02, by = -0.005)) {
+        for (B in seq(0.2, -0.2, by = -0.02)) {
+          for (DVIstar in seq (0, 0, by = 0)) {
+            template_of_smallerspace[[counter]] <- c(G, Th, Lc, A, B, DVIstar)
+            counter <- counter + 1
+          }
         }
       }
     }
   }
 }
 template_of_smallerspace <- as.data.frame(do.call(rbind, template_of_smallerspace))
-colnames(template_of_smallerspace) <- c("G", "Th", "Lc", "A", "B")
+colnames(template_of_smallerspace) <- c("G", "Th", "Lc", "A", "B", "DVIstar")
 
 # DF for results
 DVRparams <- data.frame(matrix(ncol = 8 + 2 * number_of_sites, nrow = 0))
 params <- vector("list",length = 8 + 2 * number_of_sites)
-columnnames <- c("Taxa", "G", "Th", "Lc", "A", "B", "DVIStar", "MSE")
+columnnames <- c("Taxa", "G", "Th", "Lc", "A", "B", "DVIstar", "MSE")
 for (i in 1:number_of_sites) {
   columnnames <- c(columnnames, paste0("DTH", i))
 }
@@ -175,7 +183,7 @@ all_near_minima_finer  <- data.frame()
 all_best_params_finer  <- data.frame()
 
 # Scan taxa by taxa
-for (taxa in 1:937) {
+for (taxa in 1:142) {
   tic()
   TaxaName <- "xxx"
   TaxaName <- phenotypes[taxa, 1]
@@ -188,6 +196,7 @@ for (taxa in 1:937) {
       Lc <- par[3]
       A <- par[4]
       B <- par[5]
+      DVIstar <- par[6]
       tempMSE <- MSE_cpp(
         do.call(cbind, tempdth),
         do.call(cbind, temperatures),
@@ -197,7 +206,7 @@ for (taxa in 1:937) {
         Lc,
         A,
         B,
-        0
+        DVIstar
       ) # DVIstar=0
       return(tempMSE)
     }
@@ -221,12 +230,13 @@ for (taxa in 1:937) {
     optLc <- temp_best$Lc
     optA <- temp_best$A
     optB <- temp_best$B
+    optDVIstar <- temp_best$DVIstar
     
     model <- vector()
     for (i in 1:number_of_sites) {
       model[i] <- calculateDTH_optimized(temperatures[, i],
                                          daylengths[, i],
-                                         optG, optTh, optLc, optA, optB, 0)
+                                         optG, optTh, optLc, optA, optB, optDVIstar)
     }
     
     # 4️⃣ Add DTH and MODEL values to output
@@ -282,12 +292,13 @@ for (taxa in 1:937) {
     optLc <- temp_best$Lc
     optA <- temp_best$A
     optB <- temp_best$B
+    optDVIstar <- temp_best$DVIstar
     
     model <- vector()
     for (i in 1:number_of_sites) {
       model[i] <- calculateDTH_optimized(temperatures[, i],
                                          daylengths[, i],
-                                         optG, optTh, optLc, optA, optB, 0)
+                                         optG, optTh, optLc, optA, optB, optDVIstar)
     }
     
     best_row <- data.frame(temp_best,
@@ -345,12 +356,13 @@ for (taxa in 1:937) {
     optLc <- temp_best$Lc
     optA <- temp_best$A
     optB <- temp_best$B
+    optDVIstar <- temp_best$DVIstar
     
     model <- vector()
     for (i in 1:number_of_sites) {
       model[i] <- calculateDTH_optimized(temperatures[, i],
                                          daylengths[, i],
-                                         optG, optTh, optLc, optA, optB, 0)
+                                         optG, optTh, optLc, optA, optB, optDVIstar)
     }
     
     # 5️⃣ Add DTH and MODEL values
@@ -402,7 +414,7 @@ for (taxa in 1:937) {
     optLc <- as.numeric(temp_best[3])
     optA <- as.numeric(temp_best[4])
     optB <- as.numeric(temp_best[5])
-    optDVIstar <- 0
+    optDVIstar <- as.numeric(temp_best[6])
     newMSE <- as.numeric(getanMSE(unlist(temp_best)))
     
     model <- vector()
@@ -414,7 +426,7 @@ for (taxa in 1:937) {
                                          optLc,
                                          optA,
                                          optB,
-                                         0)
+                                         optDVIstar)
     }
     
   } else {
@@ -449,7 +461,6 @@ for (taxa in 1:937) {
   toc()
 }
 
-#write_xlsx(DVRparams, "data/processed/(12-08-2025)-DVRparams-G_lowDTH.xlsx")
 write_xlsx(list(
   Coarse_Exact_Minima = all_exact_minima_coarse,
   Coarse_Near_Minima  = all_near_minima_coarse,
@@ -460,4 +471,4 @@ write_xlsx(list(
   Finer_Exact_Minima  = all_exact_minima_finer,
   Finer_Near_Minima   = all_near_minima_finer,
   Finer_Best_Params   = all_best_params_finer
-), "results/data/processed/(12-08-2025)-DVRparams-G_lowDTH.xlsx")
+), paste0("data/processed/",experimentID, ".xlsx"))
